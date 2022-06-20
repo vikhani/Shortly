@@ -14,10 +14,12 @@ public class UrlPairsService {
     UrlPairsRepository repo;
     @Autowired
     SequenceGeneratorService sequenceGeneratorService;
-    public UrlPair createUrlPair(String longUrl){
-        if(!Utils.isUrlValid(longUrl))
+
+    public UrlPair createUrlPair(String longUrl) {
+        if (!Utils.isUrlValid(longUrl))
             throw new RuntimeException("Invalid URL.");
-        UrlPair newPair = new UrlPair(longUrl, Utils.shortenURL(longUrl));
+
+        UrlPair newPair = new UrlPair(longUrl, Utils.shortenURL());
         newPair.setId(sequenceGeneratorService.generateSequence(UrlPair.SEQUENCE_NAME));
 
         List<UrlPair> pairs = repo.findAll();
@@ -26,14 +28,15 @@ public class UrlPairsService {
         return newPair;
     }
 
-    public UrlPair getUrlPairByShort(String shortUrlPart){
+    public UrlPair getUrlPairByShort(String shortUrlPart) {
         return repo.findByShortenedUrl(shortUrlPart);
     }
 
-    public UrlPair getUrlPairByLong(String longUrl){
+    public UrlPair getUrlPairByLong(String longUrl) {
         return repo.findPairByLongURL(longUrl);
     }
-    public List<UrlPair> getAll(){
+
+    public List<UrlPair> getAll() {
         return repo.findAll();
     }
 }
