@@ -7,27 +7,25 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
-@CrossOrigin()
+@CrossOrigin
 public class UrlPairsController {
     @Autowired
     UrlPairsService service;
 
     @GetMapping("/{shortPart}")
-    public RedirectView redirectToOriginalLink(@PathVariable("shortPart") String shortPart){
-        var tet = service.getAll();
+    public RedirectView redirectToOriginalLink(@PathVariable("shortPart") String shortPart) {
         var res = service.getUrlPairByShort(shortPart);
-        if(res != null){
+        if (res != null) {
             return new RedirectView(res.getLongURL());
-        }
-        else{
+        } else {
             return null;
         }
     }
 
-    @PutMapping()
-    public UrlPair createURlPair(@RequestParam("longUrl") String longUrl){
+    @PutMapping
+    public UrlPair createURlPair(@RequestParam("longUrl") String longUrl) {
         var existenceCheck = service.getUrlPairByLong(longUrl);
-        if(existenceCheck != null)
+        if (existenceCheck != null)
             return existenceCheck;
         else
             return service.createUrlPair(longUrl);

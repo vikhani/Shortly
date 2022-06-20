@@ -8,7 +8,7 @@ public interface UrlPairsRepository extends MongoRepository<UrlPair, String> {
     @Query("{longUrl:'?0'}")
     UrlPair findPairByLongURL(String longUrl);
 
-   // @Query("{shortUrl:'?0'}")
+    // @Query("{shortUrl:'?0'}")
     UrlPair findByShortenedUrl(String shortUrl);
 
 //    @Query(fields = "{'longUrl':1,'shortenedUrl':1}")
