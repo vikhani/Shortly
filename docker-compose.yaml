@@ -1,0 +1,23 @@
+
+services:
+  shortly-container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shortly
+    depends_on:
+      - mongodb
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=shortlyurlpairs
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_DATABASE=shortlyurlpairs
+  mongodb:
+    image: mongo
+    container_name: mongo
+    hostname: mongodb
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=shortlyurlpairs
