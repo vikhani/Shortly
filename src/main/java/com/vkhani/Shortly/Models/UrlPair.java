@@ -1,11 +1,10 @@
 package com.vkhani.Shortly.Models;
 
-
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.validator.routines.UrlValidator;
+
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("urlpairs")
@@ -13,28 +12,29 @@ public class UrlPair {
 
     @Transient
     public static final String SEQUENCE_NAME = "urlpairs_sequence";
-    @Id
-    @Setter Long id;
-    @Getter String longURL;
-    @Getter String shortenedUrl;
+    @MongoId
+    @Setter
+    Long id;
+    @Getter
+    String longURL;
+    @Getter
+    String shortcutCode;
+    @Getter
+    boolean isCustom;
 
-    public UrlPair(){}
+    public UrlPair() {
+    }
 
-    public UrlPair(Long id, String longURL, String shortenedUrl) {
+    public UrlPair(Long id, String longURL, String shortcutCode, boolean isCustom) {
         this.id = id;
         this.longURL = longURL;
-        this.shortenedUrl = shortenedUrl;
+        this.shortcutCode = shortcutCode;
+        this.isCustom = isCustom;
     }
-    public UrlPair(String longURL, String shortenedUrl){
-        this.longURL = longURL;
-        this.shortenedUrl = shortenedUrl;
-    }
-//    public void setLongURL(String longURL) {
-//        UrlValidator validator = new UrlValidator();
-//        if(validator.isValid(longURL))
-//            this.longURL = longURL;
-//        else
-//            throw new RuntimeException("Invalid URL.");
-//    }
 
+    public UrlPair(String longURL, String shortcutCode, boolean isCustom) {
+        this.longURL = longURL;
+        this.shortcutCode = shortcutCode;
+        this.isCustom = isCustom;
+    }
 }

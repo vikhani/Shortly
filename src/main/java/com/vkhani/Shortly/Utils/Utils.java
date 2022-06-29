@@ -2,26 +2,40 @@ package com.vkhani.Shortly.Utils;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
-import java.nio.charset.Charset;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 public class Utils {
-    public static boolean isUrlValid(String url){
-        UrlValidator validator = new UrlValidator();
+    private Utils() {
+    }
+
+    public static boolean isUrlValid(String url) {
+        UrlValidator validator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_LOCAL_URLS);
         return validator.isValid(url);
     }
 
-    public static String shortenURL(String url){
-        int leftLimit = 0;
-        int rightLimit = 122; // letter 'z'
+    public static String shortenURL() {
+        List<Character> possibleVals = new ArrayList<>();
+        // 0..9
+        possibleVals.addAll(IntStream.rangeClosed(48, 57)
+                .mapToObj(x -> (char) x)
+                .collect(Collectors.toCollection(ArrayList::new)));
+        // A..Z
+        possibleVals.addAll(IntStream.rangeClosed(65, 90)
+                .mapToObj(x -> (char) x)
+                .collect(Collectors.toCollection(ArrayList::new)));
+        // a..z
+        possibleVals.addAll(IntStream.rangeClosed(97, 122)
+                .mapToObj(x -> (char) x)
+                .collect(Collectors.toCollection(ArrayList::new)));
+
         int targetStringLength = 5;
         Random random = new Random();
         StringBuilder buffer = new StringBuilder(targetStringLength);
         for (int i = 0; i < targetStringLength; i++) {
-            int randomLimitedInt = leftLimit + (int)
-                    (random.nextFloat() * (rightLimit - leftLimit + 1));
-            buffer.append((char) randomLimitedInt);
+            char randomLimitedInt = possibleVals.get(random.nextInt(possibleVals.size()));
+            buffer.append(randomLimitedInt);
         }
         return buffer.toString();
     }

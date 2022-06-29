@@ -2,34 +2,63 @@ package com.vkhani.Shortly.Controllers;
 
 import com.vkhani.Shortly.Models.UrlPair;
 import com.vkhani.Shortly.Services.UrlPairsService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import com.vkhani.Shortly.dtos.UrlPairDto;
+import com.vkhani.Shortly.exceptions.NotFoundException;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @RestController
-@CrossOrigin()
+@CrossOrigin
 public class UrlPairsController {
     @Autowired
     UrlPairsService service;
 
     @GetMapping("/{shortPart}")
-    public RedirectView redirectToOriginalLink(@PathVariable("shortPart") String shortPart){
-        var tet = service.getAll();
+    public RedirectView redirectToOriginalLink(@PathVariable("shortPart") String shortPart) {
         var res = service.getUrlPairByShort(shortPart);
-        if(res != null){
+
+        if (res == null) {
+            throw new NotFoundException("Shortening " + shortPart + " not found.");
+        } else {
             return new RedirectView(res.getLongURL());
-        }
-        else{
-            return null;
         }
     }
 
-    @PutMapping()
-    public UrlPair createURlPair(@RequestParam("longUrl") String longUrl){
-        var existenceCheck = service.getUrlPairByLong(longUrl);
-        if(existenceCheck != null)
-            return existenceCheck;
-        else
-            return service.createUrlPair(longUrl);
+    @PutMapping("/add")
+    public UrlPairDto createURlPair(@RequestParam("longUrl") String longUrl) {
+        String url = longUrl.trim();
+        List<UrlPair> existingPairs = service.getUrlPairsByLong(url);
+
+        UrlPair suitablePair = existingPairs.stream()
+                .filter(urlPair -> !urlPair.isCustom())
+                .findFirst()
+                .orElse(service.createUrlPair(url));
+
+        return UrlPairsService.convertUrlPairToDto(suitablePair);
+    }
+
+    @PutMapping("/add/custom")
+    public ResponseEntity createCustomURlPair(@RequestParam("userVersion") String userVersion, @RequestParam("longUrl") String longUrl) {
+        String url = longUrl.trim();
+        String customCode = userVersion.trim();
+
+        if(service.getUrlPairByShort(customCode) != null)
+            return new ResponseEntity("Code " + userVersion + " already taken.", HttpStatus.CONFLICT);
+
+        var existingPair = service.getUrlPairsByLong(url);
+
+        UrlPair suitablePair = existingPair.stream()
+                .filter(x -> x.getShortcutCode().equals(customCode))
+                .findFirst()
+                .orElse(service.createCustomUrlPair(url, customCode));
+
+        return new ResponseEntity(UrlPairsService.convertUrlPairToDto(suitablePair), HttpStatus.OK);
     }
 }
