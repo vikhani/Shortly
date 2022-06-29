@@ -6,6 +6,8 @@ import com.vkhani.Shortly.Services.UrlPairsService;
 import com.vkhani.Shortly.dtos.UrlPairDto;
 import com.vkhani.Shortly.exceptions.NotFoundException;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,12 @@ public class UrlPairsController {
     }
 
     @PutMapping("/add/custom")
-    public UrlPairDto createCustomURlPair(@RequestParam("userVersion") String userVersion, @RequestParam("longUrl") String longUrl) {
+    public ResponseEntity createCustomURlPair(@RequestParam("userVersion") String userVersion, @RequestParam("longUrl") String longUrl) {
         String url = longUrl.trim();
         String customCode = userVersion.trim();
+
+        if(service.getUrlPairByShort(customCode) != null)
+            return new ResponseEntity("Code " + userVersion + " already taken.", HttpStatus.CONFLICT);
 
         var existingPair = service.getUrlPairsByLong(url);
 
@@ -54,6 +59,6 @@ public class UrlPairsController {
                 .findFirst()
                 .orElse(service.createCustomUrlPair(url, customCode));
 
-        return UrlPairsService.convertUrlPairToDto(suitablePair);
+        return new ResponseEntity(UrlPairsService.convertUrlPairToDto(suitablePair), HttpStatus.OK);
     }
 }

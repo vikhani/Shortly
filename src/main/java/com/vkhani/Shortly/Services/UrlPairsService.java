@@ -24,7 +24,19 @@ public class UrlPairsService {
         if (!Utils.isUrlValid(longUrl))
             throw new InvalidURLException("Invalid URL: " + longUrl);
 
-        UrlPair newPair = new UrlPair(longUrl, Utils.shortenURL(), false);
+        String shortCode;
+        int maxAttempts = 5;
+        int counter = 0;
+        do {
+            shortCode = Utils.shortenURL();
+            counter++;
+
+            if (counter == maxAttempts && repo.findByShortcutCode(shortCode) != null)
+                throw new BrokenUrlPairException("Unable to generate unique short code");
+
+        } while (repo.findByShortcutCode(shortCode) != null);
+
+        UrlPair newPair = new UrlPair(longUrl, shortCode, false);
         newPair.setId(sequenceGeneratorService.generateSequence(UrlPair.SEQUENCE_NAME));
 
         List<UrlPair> pairs = repo.findAll();
@@ -59,8 +71,8 @@ public class UrlPairsService {
         return repo.findAll();
     }
 
-    public static UrlPairDto convertUrlPairToDto(UrlPair urlPair){
-        if(urlPair.getLongURL() == null || urlPair.getShortcutCode() == null){
+    public static UrlPairDto convertUrlPairToDto(UrlPair urlPair) {
+        if (urlPair.getLongURL() == null || urlPair.getShortcutCode() == null) {
             throw new BrokenUrlPairException("One of the URL pair elements turned out to be empty.");
         }
 
