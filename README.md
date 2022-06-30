@@ -1,4 +1,6 @@
 # Shortly
+**Work in progress**
+
 Small backend project based on [Avito Tech interview test project](https://github.com/avito-tech/auto-backend-trainee-assignment).
 Generates a short link representation with random symbols or with your own custom string for the provided URLs. The generated representations can redirect you to your original link.
  
