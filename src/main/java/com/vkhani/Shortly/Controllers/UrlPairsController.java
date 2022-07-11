@@ -6,6 +6,7 @@ import com.vkhani.Shortly.Services.UrlPairsService;
 import com.vkhani.Shortly.dtos.UrlPairDto;
 import com.vkhani.Shortly.exceptions.NotFoundException;
 
+import com.vkhani.Shortly.exceptions.CodeTakenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,18 +40,18 @@ public class UrlPairsController {
         UrlPair suitablePair = existingPairs.stream()
                 .filter(urlPair -> !urlPair.isCustom())
                 .findFirst()
-                .orElse(service.createUrlPair(url));
+                .orElseGet(() -> service.createUrlPair(url));
 
         return UrlPairsService.convertUrlPairToDto(suitablePair);
     }
 
     @PutMapping("/add/custom")
-    public ResponseEntity createCustomURlPair(@RequestParam("userVersion") String userVersion, @RequestParam("longUrl") String longUrl) {
+    public ResponseEntity<UrlPairDto> createCustomURlPair(@RequestParam("userVersion") String userVersion, @RequestParam("longUrl") String longUrl) {
         String url = longUrl.trim();
         String customCode = userVersion.trim();
 
-        if(service.getUrlPairByShort(customCode) != null)
-            return new ResponseEntity("Code " + userVersion + " already taken.", HttpStatus.CONFLICT);
+        if (service.getUrlPairByShort(customCode) != null)
+            throw new CodeTakenException("Code " + userVersion + " already taken.");
 
         var existingPair = service.getUrlPairsByLong(url);
 
@@ -59,6 +60,6 @@ public class UrlPairsController {
                 .findFirst()
                 .orElse(service.createCustomUrlPair(url, customCode));
 
-        return new ResponseEntity(UrlPairsService.convertUrlPairToDto(suitablePair), HttpStatus.OK);
+        return new ResponseEntity<>(UrlPairsService.convertUrlPairToDto(suitablePair), HttpStatus.OK);
     }
 }

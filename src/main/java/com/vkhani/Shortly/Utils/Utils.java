@@ -2,41 +2,29 @@ package com.vkhani.Shortly.Utils;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
-import java.util.*;
-import java.util.stream.IntStream;
-import java.util.stream.Collectors;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Utils {
     private Utils() {
     }
+
+    private static final int TARGET_STRING_LENGTH = 5;
+
 
     public static boolean isUrlValid(String url) {
         UrlValidator validator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES + UrlValidator.ALLOW_LOCAL_URLS);
         return validator.isValid(url);
     }
 
-    public static String shortenURL() {
-        List<Character> possibleVals = new ArrayList<>();
-        // 0..9
-        possibleVals.addAll(IntStream.rangeClosed(48, 57)
-                .mapToObj(x -> (char) x)
-                .collect(Collectors.toCollection(ArrayList::new)));
-        // A..Z
-        possibleVals.addAll(IntStream.rangeClosed(65, 90)
-                .mapToObj(x -> (char) x)
-                .collect(Collectors.toCollection(ArrayList::new)));
-        // a..z
-        possibleVals.addAll(IntStream.rangeClosed(97, 122)
-                .mapToObj(x -> (char) x)
-                .collect(Collectors.toCollection(ArrayList::new)));
 
-        int targetStringLength = 5;
-        Random random = new Random();
-        StringBuilder buffer = new StringBuilder(targetStringLength);
-        for (int i = 0; i < targetStringLength; i++) {
-            char randomLimitedInt = possibleVals.get(random.nextInt(possibleVals.size()));
-            buffer.append(randomLimitedInt);
-        }
-        return buffer.toString();
+    public static String shortenURL(String url) throws NoSuchAlgorithmException {
+        MessageDigest crypt = MessageDigest.getInstance("SHA-256");
+        crypt.reset();
+        crypt.update(url.getBytes(StandardCharsets.UTF_8));
+
+        return new BigInteger(1, crypt.digest()).toString(16).substring(0, TARGET_STRING_LENGTH);
     }
 }
