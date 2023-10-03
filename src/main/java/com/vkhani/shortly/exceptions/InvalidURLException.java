@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Invalid URL passed.")
 public class InvalidURLException extends RuntimeException {
     public InvalidURLException() {
+        super();
     }
 
     public InvalidURLException(String message) {

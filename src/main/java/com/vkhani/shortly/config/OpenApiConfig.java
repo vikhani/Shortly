@@ -9,8 +9,8 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI usersMicroserviceOpenAPI() {
         return new OpenAPI()
-                .info(new Info().title("title")
-                        .description("descr")
+                .info(new Info().title("Shortly api")
+                        .description("Short link generation service")
                         .version("1.0"));
     }
 }

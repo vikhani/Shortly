@@ -1,39 +1,22 @@
 package com.vkhani.shortly.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.util.UUID;
+
 @Document("urlpairs")
+@Setter
+@Getter
+@AllArgsConstructor
 public class UrlPair {
 
-    @Transient
-    public static final String SEQUENCE_NAME = "urlpairs_sequence";
     @MongoId
-    @Setter
-    Long id;
-    @Getter
-    String longURL;
-    @Getter
-    String shortcutCode;
-    @Getter
-    boolean isCustom;
-
-    public UrlPair() {
-    }
-
-    public UrlPair(Long id, String longURL, String shortcutCode, boolean isCustom) {
-        this.id = id;
-        this.longURL = longURL;
-        this.shortcutCode = shortcutCode;
-        this.isCustom = isCustom;
-    }
-
-    public UrlPair(String longURL, String shortcutCode, boolean isCustom) {
-        this.longURL = longURL;
-        this.shortcutCode = shortcutCode;
-        this.isCustom = isCustom;
-    }
+    private UUID id;
+    private String longURL;
+    private String shortcutCode;
+    private boolean isCustom;
 }

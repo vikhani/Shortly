@@ -2,57 +2,54 @@ package com.vkhani.shortly.services;
 
 import com.vkhani.shortly.dtos.UrlPairDto;
 import com.vkhani.shortly.exceptions.BrokenUrlPairException;
+import com.vkhani.shortly.exceptions.CodeTakenException;
 import com.vkhani.shortly.exceptions.ShorteningUrlException;
 import com.vkhani.shortly.models.UrlPair;
 import com.vkhani.shortly.repositories.UrlPairsRepository;
 import com.vkhani.shortly.utils.Utils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UrlPairsService {
-    @Autowired
-    UrlPairsRepository repo;
-    @Autowired
-    SequenceGeneratorService sequenceGeneratorService;
+
+    private final UrlPairsRepository repo;
 
     public UrlPair createUrlPair(String longUrl) {
-        String shortCode = produceShortCode();
+        UrlPair newPair = new UrlPair(UUID.randomUUID(), longUrl, produceShortCode(), false);
 
-        UrlPair newPair = new UrlPair(longUrl, shortCode, false);
-        newPair.setId(sequenceGeneratorService.generateSequence(UrlPair.SEQUENCE_NAME));
-
-        List<UrlPair> pairs = repo.findAll();
-        pairs.add(newPair);
-        repo.saveAll(pairs);
-
-        return newPair;
+        return repo.save(newPair);
     }
 
     public UrlPair createCustomUrlPair(String longUrl, String customShort) {
-        UrlPair newPair = new UrlPair(longUrl, customShort, true);
-        newPair.setId(sequenceGeneratorService.generateSequence(UrlPair.SEQUENCE_NAME));
+        if (getUrlPairByShort(customShort).isPresent()) {
+            throw new CodeTakenException("Code " + customShort + " already taken.");
+        }
 
-        List<UrlPair> pairs = repo.findAll();
-        pairs.add(newPair);
-        repo.saveAll(pairs);
+        var existingPair = getUrlPairsByLong(longUrl);
 
-        return newPair;
+        return existingPair.stream()
+                .filter(x -> x.getShortcutCode().equals(customShort))
+                .findFirst()
+                .orElseGet(() -> {
+                    UrlPair newPair = new UrlPair(UUID.randomUUID(), longUrl, customShort, true);
+
+                    return repo.save(newPair);
+                });
     }
 
-    public UrlPair getUrlPairByShort(String shortUrlPart) {
+    public Optional<UrlPair> getUrlPairByShort(String shortUrlPart) {
         return repo.findByShortcutCode(shortUrlPart);
     }
 
     public List<UrlPair> getUrlPairsByLong(String longUrl) {
         return repo.findPairsByLongURL(longUrl);
-    }
-
-    public List<UrlPair> getAll() {
-        return repo.findAll();
     }
 
     public static UrlPairDto convertUrlPairToDto(UrlPair urlPair) {
@@ -84,10 +81,10 @@ public class UrlPairsService {
 
             remainingAttempts--;
 
-            if (remainingAttempts == 0 && repo.findByShortcutCode(shortCode) != null)
+            if (remainingAttempts == 0 && repo.findByShortcutCode(shortCode).isPresent())
                 throw new ShorteningUrlException("Unable to generate unique short code");
 
-        } while (repo.findByShortcutCode(shortCode) != null);
+        } while (repo.findByShortcutCode(shortCode).isPresent());
 
         return shortCode;
     }
